@@ -1,51 +1,25 @@
 <!DOCTYPE html>
-
-<html>
-<head>
-  <meta http-equiv="CONTENT-TYPE" content="<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DN Network</title>
+<title>DN Admin</title>
 <style>
-/* CSS STYLES */
-*{margin:0;padding:0;box-sizing:border-box}
-body{height:100vh;overflow:hidden;font-family:Arial;background:#000;}
-#bg{position:fixed;inset:0;z-index:0;}
-#bg iframe{width:100%;height:100%;border:none;}
-
-/* ACCESS BOX */
-#accessBox{position:fixed;top:12%;left:50%;transform:translateX(-50%);width:270px;background:#052f1b;color:#fff;padding:14px;border-radius:16px;text-align:center;z-index:9999;box-shadow:0 0 16px rgba(5,47,27,.95);}
-#dragHeader{font-size:13px;font-weight:bold;margin-bottom:10px;cursor:move;user-select:none;}
-#accessBox input{width:100%;padding:10px;border-radius:20px;border:2px solid #0b6b3a;background:#fff;color:#000;text-align:center;}
-#accessBox button{width:100%;margin-top:8px;padding:10px;border:none;border-radius:20px;background:#0b6b3a;color:#fff;font-weight:bold;}
-
-/* TOP BOX */
-#topBox{display:none;position:fixed;top:20%;left:50%;transform:translateX(-50%);width:150px;height:120px;background:#052f1b;color:#fff;border-radius:14px;text-align:center;z-index:9999;box-shadow:0 0 16px rgba(5,47,27,.95);cursor:move;}
-#dnTitle{font-size:16px;font-weight:bold;margin-top:6px}
-#time{font-size:14px;margin-top:6px}
-#sec{font-size:22px;font-weight:bold}
-#signal{font-size:20px;font-weight:bold;margin-top:4px;color:#fff;text-shadow:0 0 6px rgba(255,255,255,.9);}
+  body{background:#111;color:#fff;font-family:sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;}
+  .box{background:#222;padding:30px;border-radius:10px;text-align:center;width:320px;border:1px solid #333;}
+  input{width:100%;padding:10px;margin:10px 0;background:#000;border:1px solid #444;color:#fff;border-radius:5px;}
+  button{width:100%;padding:10px;background:#0b6b3a;color:#fff;border:none;border-radius:5px;cursor:pointer;font-weight:bold;}
+  .msg{margin-top:10px;font-size:12px;color:#aaa;}
 </style>
 </head>
 <body>
 
-<div id="bg">
-  <iframe id="mainFrame" src=""></iframe>
-</div>
-
-<div id="accessBox">
-  <div id="dragHeader"><br>পাসওয়ার্ড এর জন্য মেসেজ দিন 👇👇 @DN_MENTOR_420</div>
-  <input type="password" id="pass" placeholder="ENTER PASSWORD">
-  <button onclick="unlock()">ENTER</button>
-</div>
-
-<div id="topBox">
-  <div id="dnTitle">DN Network</div>
-  <div id="time">--:--:--</div>
-  <div id="sec">30s</div>
-  <div id="signal">WAIT</div>
+<div class="box">
+  <h3>Admin Control</h3>
+  <input type="text" id="linkInput" placeholder="New Link (https://...)">
+  <input type="password" id="adminPass" placeholder="Admin Password">
+  <button onclick="update()">UPDATE SITE</button>
+  <div class="msg" id="status">Ready</div>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -53,10 +27,9 @@ body{height:100vh;overflow:hidden;font-family:Arial;background:#000;}
 
 <script>
 // ============================================
-// ⚠️ নিচে আপনার FIREBASE CONFIG বসান ⚠️
+// ⚠️ এখানেও একই FIREBASE CONFIG বসান ⚠️
 // ============================================
 const firebaseConfig = {
-  // আপনার apiKey, authDomain ইত্যাদি এখানে পেস্ট করুন
   apiKey: "xxxxxxxxxxxxxxxxxxxxxxxxxxxx",
   authDomain: "xxxx.firebaseapp.com",
   databaseURL: "https://xxxx-default-rtdb.firebaseio.com",
@@ -66,86 +39,35 @@ const firebaseConfig = {
   appId: "xxxx"
 };
 
-// Firebase Connect
 if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
 }
 const db = firebase.database();
 
-// Listen for Link Changes
-db.ref('siteLink').on('value', (snapshot) => {
-    const link = snapshot.val();
-    if(link){
-        document.getElementById('mainFrame').src = link;
+function update(){
+    const link = document.getElementById('linkInput').value;
+    const pass = document.getElementById('adminPass').value;
+    const status = document.getElementById('status');
+
+    if(pass !== "ADMIN123"){ // এডমিন পাসওয়ার্ড এখানে চেঞ্জ করতে পারেন
+        alert("Wrong Password!");
+        return;
     }
-});
+    
+    if(!link){
+        alert("Enter a link!");
+        return;
+    }
 
-// Original Logic
-const PASSWORD = "DN420";
-const arr = ["BIG","SMALL"];
-let lastSlot = -1;
-
-function unlock(){
-  if(pass.value.trim() !== PASSWORD){
-    alert("WRONG PASSWORD");
-    pass.value="";
-    return;
-  }
-  accessBox.style.display="none";
-  topBox.style.display="block";
-  run();
+    status.innerText = "Updating...";
+    
+    db.ref('siteLink').set(link).then(() => {
+        status.innerText = "Success! Link Updated.";
+        status.style.color = "#0f0";
+    }).catch((e) => {
+        status.innerText = "Error: " + e.message;
+    });
 }
-
-function run(){
-  const now = new Date();
-  const s = now.getSeconds();
-  const slot = Math.floor(s/30);
-  const remain = 30 - (s % 30);
-  
-  if(slot !== lastSlot){
-    lastSlot = slot;
-    document.getElementById('signal').innerText = arr[Math.floor(Math.random()*2)];
-  }
-
-  document.getElementById('time').innerText = now.toLocaleTimeString();
-  document.getElementById('sec').innerText = remain + "s";
-  setTimeout(run,200);
-}
-
-// Draggable
-function makeDraggable(el, handle){
-  let drag=false, ox=0, oy=0;
-  (handle || el).addEventListener("mousedown",start);
-  (handle || el).addEventListener("touchstart",start,{passive:false});
-  document.addEventListener("mousemove",move);
-  document.addEventListener("touchmove",move,{passive:false});
-  document.addEventListener("mouseup",()=>drag=false);
-  document.addEventListener("touchend",()=>drag=false);
-  function start(e){
-    drag=true; el.style.transform="none";
-    const c=e.touches?e.touches[0]:e;
-    const r=el.getBoundingClientRect();
-    ox=c.clientX-r.left; oy=c.clientY-r.top;
-  }
-  function move(e){
-    if(!drag)return;
-    const c=e.touches?e.touches[0]:e;
-    el.style.left=(c.clientX-ox)+"px";
-    el.style.top=(c.clientY-oy)+"px";
-  }
-}
-makeDraggable(document.getElementById('accessBox'), document.getElementById('dragHeader'));
-makeDraggable(document.getElementById('topBox'));
 </script>
-</body>
-</html>
-/html; charset=UTF-8">
-  <link rel="stylesheet" href="styles/style.css"/>
-  <title>Hello, World!</title>
-</head>
-<body>
-  <h1>
-    Hello, World!
-  </h1>
 </body>
 </html>
