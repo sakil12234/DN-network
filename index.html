@@ -1,137 +1,66 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DN Network</title>
-<style>
-/* CSS STYLES */
-*{margin:0;padding:0;box-sizing:border-box}
-body{height:100vh;overflow:hidden;font-family:Arial;background:#000;}
-#bg{position:fixed;inset:0;z-index:0;}
-#bg iframe{width:100%;height:100%;border:none;}
-
-/* ACCESS BOX */
-#accessBox{position:fixed;top:12%;left:50%;transform:translateX(-50%);width:270px;background:#052f1b;color:#fff;padding:14px;border-radius:16px;text-align:center;z-index:9999;box-shadow:0 0 16px rgba(5,47,27,.95);}
-#dragHeader{font-size:13px;font-weight:bold;margin-bottom:10px;cursor:move;user-select:none;}
-#accessBox input{width:100%;padding:10px;border-radius:20px;border:2px solid #0b6b3a;background:#fff;color:#000;text-align:center;}
-#accessBox button{width:100%;margin-top:8px;padding:10px;border:none;border-radius:20px;background:#0b6b3a;color:#fff;font-weight:bold;}
-
-/* TOP BOX */
-#topBox{display:none;position:fixed;top:20%;left:50%;transform:translateX(-50%);width:150px;height:120px;background:#052f1b;color:#fff;border-radius:14px;text-align:center;z-index:9999;box-shadow:0 0 16px rgba(5,47,27,.95);cursor:move;}
-#dnTitle{font-size:16px;font-weight:bold;margin-top:6px}
-#time{font-size:14px;margin-top:6px}
-#sec{font-size:22px;font-weight:bold}
-#signal{font-size:20px;font-weight:bold;margin-top:4px;color:#fff;text-shadow:0 0 6px rgba(255,255,255,.9);}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DN Network</title>
+    <style>
+        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background: black; }
+        iframe { width: 100%; height: 100%; border: none; display: none; }
+        .login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #121212; display: flex; justify-content: center; align-items: center; z-index: 1000; }
+        .login-box { background: #1e1e1e; padding: 30px; border-radius: 12px; text-align: center; color: white; width: 300px; }
+        input { width: 80%; padding: 12px; margin: 15px 0; border-radius: 6px; border: 1px solid #333; background: #2c2c2c; color: white; text-align: center; }
+        button { width: 90%; padding: 12px; background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
+    </style>
 </head>
 <body>
+    <div class="login-overlay" id="overlay">
+        <div class="login-box">
+            <h2>Access Required</h2>
+            <input type="password" id="passInput" placeholder="Enter Password">
+            <button onclick="checkPass()">LOGIN</button>
+        </div>
+    </div>
+    <iframe id="myFrame" src=""></iframe>
 
-<div id="bg">
-  <iframe id="mainFrame" src=""></iframe>
-</div>
+    <script type="module">
+        import { initializeApp } from "https://dkwin9.com/#/register?invitationCode=72566522144";
+        import { getDatabase, ref, onValue } from"https://dkwin9.com/#/register?invitationCode=72566522144";
 
-<div id="accessBox">
-  <div id="dragHeader"><br>পাসওয়ার্ড এর জন্য মেসেজ দিন 👇👇 @DN_MENTOR_420</div>
-  <input type="password" id="pass" placeholder="ENTER PASSWORD">
-  <button onclick="unlock()">ENTER</button>
-</div>
+        // আপনার Firebase Config এখানে বসান
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            databaseURL: "YOUR_DATABASE_URL",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
 
-<div id="topBox">
-  <div id="dnTitle">DN Network</div>
-  <div id="time">--:--:--</div>
-  <div id="sec">30s</div>
-  <div id="signal">WAIT</div>
-</div>
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        let correctPass = "";
+        let targetUrl = "";
 
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+        // ডাটাবেস থেকে ডাটা নিয়ে আসা
+        onValue(ref(db, 'siteControl/'), (snapshot) => {
+            const data = snapshot.val();
+            if(data) {
+                targetUrl = data.targetLink;
+                correctPass = data.userPassword;
+                document.getElementById('myFrame').src = targetUrl;
+            }
+        });
 
-<script>
-// ============================================
-// ⚠️ নিচে আপনার FIREBASE CONFIG বসান ⚠️
-// ============================================
-const firebaseConfig = {
-  // আপনার apiKey, authDomain ইত্যাদি এখানে পেস্ট করুন
-  apiKey: "xxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-  authDomain: "xxxx.firebaseapp.com",
-  databaseURL: "https://xxxx-default-rtdb.firebaseio.com",
-  projectId: "xxxx",
-  storageBucket: "xxxx.appspot.com",
-  messagingSenderId: "xxxx",
-  appId: "xxxx"
-};
-
-// Firebase Connect
-if (!firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
-}
-const db = firebase.database();
-
-// Listen for Link Changes
-db.ref('siteLink').on('value', (snapshot) => {
-    const link = snapshot.val();
-    if(link){
-        document.getElementById('mainFrame').src = link;
-    }
-});
-
-// Original Logic
-const PASSWORD = "DN420";
-const arr = ["BIG","SMALL"];
-let lastSlot = -1;
-
-function unlock(){
-  if(pass.value.trim() !== PASSWORD){
-    alert("WRONG PASSWORD");
-    pass.value="";
-    return;
-  }
-  accessBox.style.display="none";
-  topBox.style.display="block";
-  run();
-}
-
-function run(){
-  const now = new Date();
-  const s = now.getSeconds();
-  const slot = Math.floor(s/30);
-  const remain = 30 - (s % 30);
-  
-  if(slot !== lastSlot){
-    lastSlot = slot;
-    document.getElementById('signal').innerText = arr[Math.floor(Math.random()*2)];
-  }
-
-  document.getElementById('time').innerText = now.toLocaleTimeString();
-  document.getElementById('sec').innerText = remain + "s";
-  setTimeout(run,200);
-}
-
-// Draggable
-function makeDraggable(el, handle){
-  let drag=false, ox=0, oy=0;
-  (handle || el).addEventListener("mousedown",start);
-  (handle || el).addEventListener("touchstart",start,{passive:false});
-  document.addEventListener("mousemove",move);
-  document.addEventListener("touchmove",move,{passive:false});
-  document.addEventListener("mouseup",()=>drag=false);
-  document.addEventListener("touchend",()=>drag=false);
-  function start(e){
-    drag=true; el.style.transform="none";
-    const c=e.touches?e.touches[0]:e;
-    const r=el.getBoundingClientRect();
-    ox=c.clientX-r.left; oy=c.clientY-r.top;
-  }
-  function move(e){
-    if(!drag)return;
-    const c=e.touches?e.touches[0]:e;
-    el.style.left=(c.clientX-ox)+"px";
-    el.style.top=(c.clientY-oy)+"px";
-  }
-}
-makeDraggable(document.getElementById('accessBox'), document.getElementById('dragHeader'));
-makeDraggable(document.getElementById('topBox'));
-</script>
+        window.checkPass = function() {
+            const input = document.getElementById('passInput').value;
+            if(input === correctPass) {
+                document.getElementById('overlay').style.display = 'none';
+                document.getElementById('myFrame').style.display = 'block';
+            } else {
+                alert("Incorrect Password!");
+            }
+        }
+    </script>
 </body>
 </html>
